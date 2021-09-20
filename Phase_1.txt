@@ -1,0 +1,104 @@
+# 12190103
+
+*******
+Phase 1
+*******
+
+For the Phase 1 solution we have got two approach:
+1. Direct approach
+2. By debugging the assemble code
+
+1. Direct Approach
+	- For this approach you just need to command as strings bomb 
+	which bassically display all the string that are present in 
+	bomb file as show below 
+
+	..
+	..
+	..
+	%s: Error: Couldn't open %s
+	Usage: %s [<input_file>]
+	That's number 2.  Keep going!
+	Halfway there!
+	Good work!  On to the next...
+	Welcome to my fiendish little bomb. You have 6 phases with
+	which to blow yourself up. Have a nice day!
+	Phase 1 defused. How about the next one?
+	So you got that one.  Try this one.
+s	Public speaking is very easy.
+	Wow! You've defused the secret stage!
+	So you think you can stop the bomb with ctrl-c, do you?
+	Curses, you've found the secret phase!
+	But finding it and solving it are quite different...
+	Congratulations! You've defused the bomb!
+	Well...
+	OK. :-)
+	Invalid phase%s
+	BOOM!!!
+	The bomb has blown up.
+	%d %d %d %d %d %d
+	Error: Premature EOF on stdin
+	GRADE_BOMB
+	Error: Input line too long
+	%d %d %s
+	DrEvil
+	greatwhite.ics.cs.cmu.edu
+	angelshark.ics.cs.cmu.edu
+	makoshark.ics.cs.cmu.edu
+	whaleshark.ics.cs.cmu.edu
+	Program timed out after %d seconds
+	..
+	..
+	..
+
+	From the above string displayed in strings bomb you just need to 
+	find out the unique string that is not kind of revelent to that 
+	information about bomb.
+	So you can see that "Public speaking is very easy." is not related 
+	to any information about the bomb therefor we can conclude that the
+	unknown string (Phase_1 Solution) is that particular string.
+
+2. By debugging the assemble code
+
+	For these process you need to use gdb and set up break point:
+
+	(gdb) b phase_1
+	Breakpoint 1 at 0x400ef0
+	(gdb) r
+	Starting program: /home/chh/bomb8/bomb 
+    Welcome to my fiendish little bomb. You have 6 phases with
+    which to blow yourself up. Have a nice day!
+    hi
+
+    Breakpoint 1, 0x0000000000400ef0 in phase_1 ()
+    (gdb) disas
+    Dump of assembler code for function phase_1:
+    400e8d:	48 83 ec 08          	sub    $0x8,%rsp
+	400e91:	be cc 23 40 00       	mov    $0x4023cc,%esi
+	400e96:	e8 9e 04 00 00       	callq  401339 <strings_not_equal>
+	400e9b:	85 c0                	test   %eax,%eax
+	400e9d:	74 05                	je     400ea4 <phase_1+0x17>
+	400e9f:	e8 94 05 00 00       	callq  401438 <explode_bomb>
+	400ea4:	48 83 c4 08          	add    $0x8,%rsp
+	400ea8:	c3                   	retq   
+
+	Lets examine what is being moved from address 0x4023cc. 
+	We know it has to be a string of some sort so we use '/s':
+
+	(gdb) x/s 0x4023cc
+	0x4023cc : 		"Public speaking is very easy."
+
+
+	So solution is Public speaking is very easy.
+
+
+
+
+
+
+
+
+
+
+
+

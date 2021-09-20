@@ -1,0 +1,113 @@
+#12190103s
+
+
+*******
+Phase 3
+*******
+
+
+Let's use 3 256 as our random input:
+
+That's number 2.  Keep going!
+3 256
+
+Breakpoint 1, 0x0000000000400f53 in phase_3 ()
+(gdb) disas
+
+
+For <phase_3> following are the set of assembly code
+
+0000000000400f0d <phase_3>:
+  400f0d:	48 83 ec 18          	sub    $0x18,%rsp //makes stack 18 bytes
+  400f11:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
+  400f18:	00 00 
+  400f1a:	48 89 44 24 08       	mov    %rax,0x8(%rsp)
+  400f1f:	31 c0                	xor    %eax,%eax
+  400f21:	48 8d 4c 24 04       	lea    0x4(%rsp),%rcx
+  400f26:	48 89 e2             	mov    %rsp,%rdx
+  400f29:	be b7 25 40 00       	mov    $0x4025b7,%esi           //Basically Show the user input so when you do x/s $0x4025b7 it show that 																		 	we need to int "%d %d"
+  400f2e:	e8 7d fc ff ff       	callq  400bb0 <__isoc99_sscanf@plt> // show that we need user input 
+  400f33:	83 f8 01             	cmp    $0x1,%eax 					 //comparing 1 with result from input
+  400f36:	7f 05                	jg     400f3d <phase_3+0x30>         //if %eax > 1 then jump pass explode bomb
+  400f38:	e8 fb 04 00 00       	callq  401438 <explode_bomb>
+  400f3d:	83 3c 24 07          	cmpl   $0x7,(%rsp)					//comparing 7 with value at 0xc(%rsp)
+  400f41:	77 5b                	ja     400f9e <phase_3+0x91>		//jump to bomb if above 7
+  400f43:	8b 04 24             	mov    (%rsp),%eax
+  400f46:	ff 24 c5 00 24 40 00 	jmpq   *0x402400(,%rax,8)			//this is a jump table
+  400f4d:	b8 80 03 00 00       	mov    $0x380,%eax
+  400f52:	eb 05                	jmp    400f59 <phase_3+0x4c>
+  400f54:	b8 00 00 00 00       	mov    $0x0,%eax
+  400f59:	2d e4 03 00 00       	sub    $0x3e4,%eax
+  400f5e:	eb 05                	jmp    400f65 <phase_3+0x58>
+  400f60:	b8 00 00 00 00       	mov    $0x0,%eax
+  400f65:	05 1e 02 00 00       	add    $0x21e,%eax
+  400f6a:	eb 05                	jmp    400f71 <phase_3+0x64>
+  400f6c:	b8 00 00 00 00       	mov    $0x0,%eax
+  400f71:	83 e8 34             	sub    $0x34,%eax
+  400f74:	eb 05                	jmp    400f7b <phase_3+0x6e>
+  400f76:	b8 00 00 00 00       	mov    $0x0,%eax
+  400f7b:	83 c0 34             	add    $0x34,%eax
+  400f7e:	eb 05                	jmp    400f85 <phase_3+0x78>
+  400f80:	b8 00 00 00 00       	mov    $0x0,%eax
+  400f85:	83 e8 34             	sub    $0x34,%eax
+  400f88:	eb 05                	jmp    400f8f <phase_3+0x82>
+  400f8a:	b8 00 00 00 00       	mov    $0x0,%eax
+  400f8f:	83 c0 34             	add    $0x34,%eax
+  400f92:	eb 05                	jmp    400f99 <phase_3+0x8c>
+  400f94:	b8 00 00 00 00       	mov    $0x0,%eax
+  400f99:	83 e8 34             	sub    $0x34,%eax
+  400f9c:	eb 0a                	jmp    400fa8 <phase_3+0x9b>
+  400f9e:	e8 95 04 00 00       	callq  401438 <explode_bomb>
+  400fa3:	b8 00 00 00 00       	mov    $0x0,%eax
+  400fa8:	83 3c 24 05          	cmpl   $0x5,(%rsp)
+  400fac:	7f 06                	jg     400fb4 <phase_3+0xa7>
+  400fae:	3b 44 24 04          	cmp    0x4(%rsp),%eax              //compares $rsp+8 to $eax == %eax holds the answer!
+  400fb2:	74 05                	je     400fb9 <phase_3+0xac>
+  400fb4:	e8 7f 04 00 00       	callq  401438 <explode_bomb>
+  400fb9:	48 8b 44 24 08       	mov    0x8(%rsp),%rax
+  400fbe:	64 48 33 04 25 28 00 	xor    %fs:0x28,%rax
+  400fc5:	00 00 
+  400fc7:	74 05                	je     400fce <phase_3+0xc1>
+  400fc9:	e8 32 fb ff ff       	callq  400b00 <__stack_chk_fail@plt>
+  400fce:	48 83 c4 18          	add    $0x18,%rsp					//closes stack frame
+  400fd2:	c3                   	retq   
+
+
+
+From above code, we can see this is a switch statement. I seperated each case with a space in between. Notice each case ends with 
+a call to 400fce which compares our second digit with the correct second digit
+
+Lets move the pointer to <+14> to figure out what $0x4025b7 is:
+(gdb) x/s $0x4025b7
+$0x4025b7:       "%d %d"
+
+Lets also figure out what 0xc(%rsp) holds when pointer is at this instruction:
+0x0000000000400f7a <+39>:    cmpl   $0x7,(%rsp)
+
+(gdb) x/d $rsp
+0x7fffffffe4ac: 3
+We see %rsp holds our first digit!
+
+As we move our cursor to  400fae: 
+Here we are able to get the second digit after completed the above series of function
+
+(gdb) i r 
+rax            0x7fffffffdea0    4294967244
+rbx            0x7fffffffe5a8   140737488348584
+rcx            0x20     3245
+rdx            0x7fffffffe4a8   140737488348328
+rsi            0x7fffffffdea0   140737488346784
+
+As we can see, our digit of 3 gets us pass that first requirement of the digit being between 1 and 7.
+So from the above info register we get the value of eax that is 4294967244 (Second value)
+
+Therefor  we can conclude that our solution for phase 3 is 3 4294967244
+
+
+
+
+
+
+
+
+
